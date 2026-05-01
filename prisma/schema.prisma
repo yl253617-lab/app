@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. 管理员表 (开题报告要求：用于后台入口、审核评论、查看数据) 
+model adminuser {
+  id            Int       @id @default(autoincrement())
+  username      String    @unique @db.VarChar(50)
+  password_hash String    @db.VarChar(255)
+  last_login    DateTime? @db.DateTime(0)
+}
+
+// 2. 博客文章表 (由 Markdown 自动同步，支持发布状态、分类、浏览统计) 
+model post {
+  id           Int       @id @default(autoincrement())
+  slug         String    @unique @db.VarChar(100)
+  title        String    @db.VarChar(200)
+  content      String    @db.Text // ← 新增这个字段存储 Markdown 内容
+  category     String?   @db.VarChar(50)
+  views        Int?      @default(0)
+  is_published Boolean?  @default(true)
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+  updated_at   DateTime? @default(now()) @db.Timestamp(0)
+  excerpt      String?   @db.Text
+  comments     Comment[]
+}
+
+// 3. 评论表 (通过 is_approved 实现审核机制，内置防灌水字段) 
+model Comment {
+  id          Int      @id @default(autoincrement())
+  author      String   @default("热心网友") @db.VarChar(50)
+  content     String   @db.Text
+  is_approved Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  
+  // 关联文章
+  post_id     Int
+  // 【重点修改这里】：添加 onDelete: Cascade
+  post        post     @relation(fields: [post_id], references: [id], onDelete: Cascade)
+}
+
+// 4. 作品集项目 (支持排序与上下线控制) 
+
+
+// 5. 细粒度访问日志 (支撑浏览量去重统计) 
+model viewlog {
+  id          Int       @id @default(autoincrement())
+  target_type String?   @db.VarChar(20)
+  target_id   Int?
+  ip_address  String?   @db.VarChar(45)
+  user_agent  String?   @db.Text
+  viewed_at   DateTime? @default(now()) @db.Timestamp(0)
+}
+// prisma/schema.prisma
+
+// 修改 prisma/schema.prisma，保留这一个即可
+model project {
+  id           Int       @id @default(autoincrement())
+  title        String    @db.VarChar(150)
+  description  String?   @db.Text
+  cover_image  String?   @db.VarChar(255)
+  tech_stack   String?   @db.VarChar(255)
+  demo_link    String?   @db.VarChar(255)
+  github_link  String?   @db.VarChar(255)
+  sort_order   Int?      @default(0)
+  
+  // --- 以下为新增字段，用于支撑论文中的“动态交互统计” ---
+  likes        Int       @default(0)
+  view_count   Int       @default(0)
+  is_featured  Boolean   @default(false) 
+  created_at   DateTime? @default(now()) @db.Timestamp(0)
+}
+
+
+model Profile {
+  id        Int      @id @default(1)
+  name      String
+  bio       String   @db.Text
+  avatar    String?
+  skills    String   // 保持逗号分隔
+  // 新增以下两个字段，使用 String 存储 JSON 字符串
+  experience String?  @db.Text 
+  education  String?  @db.Text
+}
