@@ -11,7 +11,7 @@ export default function NewBlogPage() {
 
     if (!title || !content) return;
 
-    await prisma.post.create({ data: { title, content, category } });
+    await prisma.post.create({ data: { title, content, category , slug} });
     revalidatePath("/blog");
     redirect("/admin/dashboard");
   }
