@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"; // 确保你之前创建了 prisma 客户
 export async function getProjects() {
   try {
     const projects = await prisma.project.findMany({
-      orderBy: { order: 'desc' }, // 按权重排序
+      orderBy: { created_at: 'desc' }, // 按权重排序
     });
     return projects;
   } catch (error) {
