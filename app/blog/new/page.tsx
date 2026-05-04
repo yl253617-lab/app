@@ -11,7 +11,12 @@ export default function NewBlogPage() {
 
     if (!title || !content) return;
 
-    await prisma.post.create({ data: { title, content, category , slug} });
+    // ✅ 就是这一行！必须先生成一个唯一的 slug
+    const slug = `post-${Date.now()}`; 
+
+    // ✅ 然后再把它存进数据库
+    await prisma.post.create({ data: { title, content, category, slug } });
+    
     revalidatePath("/blog");
     redirect("/admin/dashboard");
   }
