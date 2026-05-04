@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   try {
     const posts = await prisma.post.findMany({
       where: {
-        published: true,
+        is_published: true,
         // 如果 URL 有 category 参数就过滤，没有就查全部
         ...(category && category !== "全部" ? { category } : {}),
       },
