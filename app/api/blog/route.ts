@@ -12,7 +12,7 @@ export async function GET(request: Request) {
         // 如果 URL 有 category 参数就过滤，没有就查全部
         ...(category && category !== "全部" ? { category } : {}),
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { created_at: "desc" },
     });
     return NextResponse.json(posts);
   } catch (error) {
