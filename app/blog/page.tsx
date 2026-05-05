@@ -85,18 +85,17 @@ export default async function BlogListPage({
             </div>
           </header>
 
-          {/* 改为左侧边栏，右侧主内容 */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
             
             {/* 【左侧：侧边栏 (聚合与推荐)】 */}
-            {/* order-1 让它在 HTML 结构里排前面，移动端会在上面，桌面端在左边 */}
             <aside className="lg:col-span-1 space-y-8 order-1">
               {/* 分类导航 */}
               <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-                <h3 className="text-lg font-black text-slate-900 mb-5 tracking-tight flex items-center gap-2">
+                {/* 🌟 修复标题层级跳跃，将 h3 改为 h2 */}
+                <h2 className="text-lg font-black text-slate-900 mb-5 tracking-tight flex items-center gap-2">
                   <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                   分类检索
-                </h3>
+                </h2>
                 <ul className="space-y-2">
                   <li>
                     <Link 
@@ -124,13 +123,13 @@ export default async function BlogListPage({
 
               {/* 热门文章推荐 */}
               <div className="bg-gradient-to-b from-slate-900 to-indigo-950 p-7 rounded-[2rem] shadow-xl text-white relative overflow-hidden">
-                {/* 装饰背景 */}
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/20 blur-3xl rounded-full"></div>
                 
-                <h3 className="text-lg font-black mb-6 flex items-center gap-2 relative z-10">
+                {/* 🌟 修复标题层级跳跃，将 h3 改为 h2 */}
+                <h2 className="text-lg font-black mb-6 flex items-center gap-2 relative z-10">
                   <svg className="w-5 h-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" /></svg>
                   热门推荐
-                </h3>
+                </h2>
                 <div className="space-y-5 relative z-10">
                   {hotPosts.map((post, index) => (
                     <Link href={`/blog/${post.slug}`} key={post.id} className="block group">
@@ -157,11 +156,11 @@ export default async function BlogListPage({
             <div className="lg:col-span-3 order-2">
               {posts.length === 0 ? (
                 <div className="text-center py-32 bg-white rounded-[3rem] border border-dashed border-slate-200">
-                  <p className="text-slate-400 font-bold text-lg mb-2">没有找到相关的文章 🥲</p>
-                  <p className="text-slate-400 text-sm">尝试更换搜索词或者分类</p>
+                  {/* 🌟 修复文字对比度不足，将 text-slate-400 改为 500 */}
+                  <p className="text-slate-500 font-bold text-lg mb-2">没有找到相关的文章 🥲</p>
+                  <p className="text-slate-500 text-sm">尝试更换搜索词或者分类</p>
                 </div>
               ) : (
-                // 改为了两列的高级卡片布局
                 <div className="grid gap-6 md:grid-cols-2">
                   {posts.map((post) => (
                     <Link
@@ -169,7 +168,6 @@ export default async function BlogListPage({
                       href={`/blog/${post.slug}`}
                       className="group relative block p-8 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/5 hover:-translate-y-1 transition-all duration-500 overflow-hidden"
                     >
-                      {/* 🌟 卡片顶部悬浮渐变线条动效 */}
                       <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out"></div>
 
                       <div className="flex justify-between items-start mb-6">
@@ -186,7 +184,6 @@ export default async function BlogListPage({
                         {post.title}
                       </h2>
                       
-                      {/* 截取摘要或正文作为简介 */}
                       <p className="text-sm text-slate-500 leading-relaxed line-clamp-2 mb-10">
                         {post.excerpt || post.content.replace(/[#*`>]/g, '').substring(0, 100) + '...'}
                       </p>
@@ -203,7 +200,6 @@ export default async function BlogListPage({
                           </div>
                         </div>
 
-                        {/* 🌟 悬浮滑入的“阅读全文”小彩蛋 */}
                         <span className="text-indigo-600 text-sm font-black opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 ease-out">
                           阅读全文 →
                         </span>

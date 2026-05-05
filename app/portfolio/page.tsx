@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import FadeIn from "@/components/FadeIn";
 import Link from "next/link";
+import FadeIn from "@/components/FadeIn";
 import LikeButton from "@/components/LikeButton";
 import SearchBar from "@/components/SearchBar";
 import type { Metadata } from 'next';
@@ -82,10 +82,11 @@ export default async function PortfolioPage({
             {/* 【左侧：分类侧边栏】 */}
             <aside className="lg:col-span-1 space-y-8 order-1">
               <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-                <h3 className="text-lg font-black text-slate-900 mb-5 tracking-tight flex items-center gap-2">
+                {/* 🌟 修复标题层级跳跃，将 h3 改为 h2 */}
+                <h2 className="text-lg font-black text-slate-900 mb-5 tracking-tight flex items-center gap-2">
                   <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
                   技术栈索引
-                </h3>
+                </h2>
                 <ul className="space-y-2">
                   <li>
                     <Link 
@@ -203,8 +204,9 @@ export default async function PortfolioPage({
               {/* 空数据占位符 */}
               {projects.length === 0 && (
                 <div className="py-32 text-center bg-white border border-dashed border-slate-200 rounded-[3rem]">
-                  <p className="text-slate-400 font-bold text-lg mb-2">没有找到相关的项目 🥲</p>
-                  <p className="text-slate-400 text-sm font-medium">尝试更换搜索词或者分类标签</p>
+                  {/* 🌟 修复文字对比度不足，将 text-slate-400 改为 500 */}
+                  <p className="text-slate-500 font-bold text-lg mb-2">没有找到相关的项目 🥲</p>
+                  <p className="text-slate-500 text-sm font-medium">尝试更换搜索词或者分类标签</p>
                 </div>
               )}
             </div>
