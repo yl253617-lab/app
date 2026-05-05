@@ -2,6 +2,12 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import FadeIn from "@/components/FadeIn";
 import SearchBar from "@/components/SearchBar";
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: '技术随笔 | 梁永波',
+  description: '记录全栈开发点滴，分享 Next.js 架构、前端工程化与底层技术细节的见解。',
+};
 
 export const revalidate = 3600; 
 

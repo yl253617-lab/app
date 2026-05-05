@@ -4,6 +4,12 @@ import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const pathname = usePathname();
+
+  // ✅ 核心修改：如果当前路径是以 /admin 开头（后台管理页面），直接返回 null 隐藏导航栏
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   const navLinks = [
     { name: "首页", href: "/" },
     { name: "博客", href: "/blog" },

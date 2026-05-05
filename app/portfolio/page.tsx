@@ -3,6 +3,12 @@ import FadeIn from "@/components/FadeIn";
 import Link from "next/link";
 import LikeButton from "@/components/LikeButton";
 import SearchBar from "@/components/SearchBar";
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: '作品集 | 梁永波',
+  description: '基于 Next.js、React、Prisma 与 MySQL 构建的全栈开发实战项目与创意作品展示。',
+};
 
 export default async function PortfolioPage({
   searchParams,

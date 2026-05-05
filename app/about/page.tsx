@@ -1,5 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import FadeIn from "@/components/FadeIn";
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: '关于我 | 梁永波',
+  description: '昆明学院计算机科学与技术专业本科生，深耕全栈开发领域，热衷于构建响应式、高性能的 Web 应用。',
+};
 
 // 🌟 亮点 1：定义严谨的 TypeScript 数据接口
 interface Experience {
