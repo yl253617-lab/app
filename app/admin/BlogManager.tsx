@@ -10,7 +10,7 @@ export default function BlogManager({ posts = [] }: { posts: any[] }) {
   // ✅ 修复 2：二次防御，确保在渲染逻辑中始终处理数组
   const safePosts = Array.isArray(posts) ? posts : [];
 
-  // 辅助函数：将标题转换为 URL 友好的 slug
+  // 辅助函数：将标题转换为 URL 友好的 slug (用于留空时的自动生成)
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
@@ -44,22 +44,47 @@ export default function BlogManager({ posts = [] }: { posts: any[] }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-slate-400 ml-2 uppercase">文章标题</label>
-            <input name="title" defaultValue={editingPost?.title} placeholder="输入标题..." required className="w-full p-4 bg-white rounded-2xl border-none text-sm focus:ring-2 focus:ring-indigo-500" />
+            <input 
+              name="title" 
+              defaultValue={editingPost?.title} 
+              placeholder="输入标题..." 
+              required 
+              className="w-full p-4 bg-white rounded-2xl border-none text-sm focus:ring-2 focus:ring-indigo-500" 
+            />
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-slate-400 ml-2 uppercase">分类</label>
-            <input name="category" defaultValue={editingPost?.category || "技术"} placeholder="如：Next.js" className="w-full p-4 bg-white rounded-2xl border-none text-sm focus:ring-2 focus:ring-indigo-500" />
+            <input 
+              name="category" 
+              defaultValue={editingPost?.category || "技术"} 
+              placeholder="如：Next.js" 
+              className="w-full p-4 bg-white rounded-2xl border-none text-sm focus:ring-2 focus:ring-indigo-500" 
+            />
           </div>
         </div>
 
         <div className="space-y-1">
           <label className="text-[10px] font-bold text-slate-400 ml-2 uppercase">自定义链接 (Slug)</label>
-          <input name="slug" defaultValue={editingPost?.slug} placeholder="my-first-post (留空则自动生成)" className="w-full p-4 bg-white rounded-2xl border-none text-sm font-mono" />
+          {/* ✅ 关键修改点：添加 pattern 和 title 属性用于测试拦截 */}
+          <input 
+            name="slug" 
+            defaultValue={editingPost?.slug} 
+            placeholder="my-first-post (留空则自动生成)" 
+            pattern="^[a-z0-9-]+$"
+            title="Slug 只能包含小写字母、数字和连字符（例如: my-blog-post）"
+            className="w-full p-4 bg-white rounded-2xl border-none text-sm font-mono focus:ring-2 focus:ring-indigo-500" 
+          />
         </div>
 
         <div className="space-y-1">
           <label className="text-[10px] font-bold text-slate-400 ml-2 uppercase">正文内容 (Markdown)</label>
-          <textarea name="content" defaultValue={editingPost?.content} placeholder="使用 Markdown 编写..." required className="w-full p-4 bg-white rounded-2xl border-none text-sm h-64 font-mono focus:ring-2 focus:ring-indigo-500" />
+          <textarea 
+            name="content" 
+            defaultValue={editingPost?.content} 
+            placeholder="使用 Markdown 编写..." 
+            required 
+            className="w-full p-4 bg-white rounded-2xl border-none text-sm h-64 font-mono focus:ring-2 focus:ring-indigo-500" 
+          />
         </div>
         
         <div className="flex gap-3 pt-2">
@@ -76,7 +101,6 @@ export default function BlogManager({ posts = [] }: { posts: any[] }) {
 
       {/* 文章列表 */}
       <div className="space-y-3">
-        {/* ✅ 修复 3：使用 safePosts 替代原始 posts */}
         {safePosts.length === 0 ? (
           <div className="text-center py-10 text-slate-300 text-xs italic bg-slate-50 rounded-2xl border border-dashed">
             暂无文章数据
