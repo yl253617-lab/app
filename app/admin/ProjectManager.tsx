@@ -1,106 +1,176 @@
-// @ts-nocheck
 "use client";
 
 import { useState } from "react";
 import { addProject, updateProject, deleteProject } from "./actions";
 
-// ✅ 1. 增加参数默认值 = [] 解决 undefined 导致的崩溃
 export default function ProjectManager({ initialProjects = [] }: { initialProjects: any[] }) {
   const [editingProject, setEditingProject] = useState<any>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [urlError, setUrlError] = useState<string | null>(null); 
+  const projects = Array.isArray(initialProjects) ? initialProjects : [];
 
-  // 包装提交逻辑以展示提示
-  const handleFormAction = async (formData: FormData) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setUrlError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const coverImage = formData.get("cover_image") as string;
+    const demoLink = formData.get("demo_link") as string;
+    const githubLink = formData.get("github_link") as string;
+
+    // ======= 【TC-25 进阶版：严格 HTTPS 协议拦截校验】 =======
+    // 正则表达式：只允许 https:// 开头
+    const httpsRegex = /^https:\/\//; 
+    
+    if (coverImage && !httpsRegex.test(coverImage)) {
+      setUrlError("❌ 封面图格式错误：为了保证网站安全，图片地址必须以 https:// 开头");
+      return; 
+    }
+
+    if (demoLink && !httpsRegex.test(demoLink)) {
+      setUrlError("❌ 预览地址格式错误：外链必须以 https:// 开头");
+      return; 
+    }
+    
+    if (githubLink && !httpsRegex.test(githubLink)) {
+      setUrlError("❌ GitHub 地址格式错误：必须以 https:// 开头");
+      return;
+    }
+    // =========================================================
+
+    // 填补数据库需要的默认字段，保持 UI 极简
+    formData.append("sort_order", "0");
+    formData.append("is_featured", "false");
+
     try {
       if (editingProject) {
         await updateProject(formData);
-        setToast("作品信息已成功更新！");
       } else {
         await addProject(formData);
-        setToast("新作品发布成功！");
       }
+      
       setEditingProject(null);
-      setTimeout(() => setToast(null), 3000);
-    } catch (error) {
-      setToast("操作失败，请重试");
+      (e.target as HTMLFormElement).reset();
+      alert("✨ 作品已成功同步至数据库！");
+    } catch (err) {
+      alert("保存失败，请检查网络或数据库连接");
     }
   };
 
-  // ✅ 2. 预处理数据，确保变量始终是数组
-  const projects = Array.isArray(initialProjects) ? initialProjects : [];
-
   return (
-    <section className="space-y-8 relative">
-      {/* 动态成功提示气泡 */}
-      {toast && (
-        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-top-4 duration-300">
-          <div className="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700">
-            <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-[10px]">✓</div>
-            <span className="text-xs font-bold">{toast}</span>
-          </div>
-        </div>
-      )}
-
-      {/* 编辑/发布表单 */}
-      <div className={`bg-white p-8 rounded-[2.5rem] shadow-sm border transition-all duration-500 ${editingProject ? 'border-amber-400 ring-4 ring-amber-50' : 'border-slate-100'}`}>
-        <h2 className={`text-xl font-black mb-6 flex items-center gap-2 ${editingProject ? 'text-amber-600' : 'text-blue-600'}`}>
-          <span className={`w-1.5 h-6 rounded-full ${editingProject ? 'bg-amber-600' : 'bg-blue-600'}`}></span>
-          {editingProject ? "正在修改作品" : "发布新作品"}
+    <section className="space-y-6">
+      {/* 1. 发布作品表单 */}
+      <div className={`bg-white p-8 rounded-[2rem] shadow-sm border transition-all ${editingProject ? 'border-[#2563eb] ring-4 ring-blue-50' : 'border-slate-100'}`}>
+        <h2 className="text-xl font-bold mb-8 flex items-center gap-2 text-[#2563eb]">
+          <span className="w-1.5 h-6 bg-[#2563eb] rounded-full"></span>
+          {editingProject ? "编辑项目信息" : "发布新作品"}
         </h2>
         
-        <form action={handleFormAction} className="grid grid-cols-1 gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {editingProject && <input type="hidden" name="id" value={editingProject.id} />}
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input name="title" defaultValue={editingProject?.title || ""} key={`t-${editingProject?.id}`} placeholder="项目名称" required className="p-3 bg-slate-50 rounded-xl border-none text-xs focus:ring-2 focus:ring-blue-500" />
-            <input name="tech_stack" defaultValue={editingProject?.tech_stack || ""} key={`s-${editingProject?.id}`} placeholder="技术栈 (如: Next.js / Tailwind)" className="p-3 bg-slate-50 rounded-xl border-none text-xs focus:ring-2 focus:ring-blue-500" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <input 
+              name="title" 
+              defaultValue={editingProject?.title} 
+              placeholder="项目名称 (必填)" 
+              required 
+              className="w-full p-4 bg-[#f8f9fa] rounded-xl border-none text-sm focus:ring-2 focus:ring-[#2563eb] outline-none transition-all" 
+            />
+            <input 
+              name="tech_stack" 
+              defaultValue={editingProject?.tech_stack} 
+              placeholder="技术栈 (如: Next.js / Tailwind)" 
+              className="w-full p-4 bg-[#f8f9fa] rounded-xl border-none text-sm focus:ring-2 focus:ring-[#2563eb] outline-none transition-all" 
+            />
           </div>
 
-          <input name="cover_image" defaultValue={editingProject?.cover_image || ""} key={`i-${editingProject?.id}`} placeholder="封面图 URL" className="p-3 bg-slate-50 rounded-xl border-none text-xs focus:ring-2 focus:ring-blue-500" />
-          
-          <div className="grid grid-cols-2 gap-2">
-            <input name="demo_link" defaultValue={editingProject?.demo_link || ""} key={`d-${editingProject?.id}`} placeholder="预览地址" className="p-3 bg-slate-50 rounded-xl border-none text-xs focus:ring-2 focus:ring-blue-500" />
-            <input name="github_link" defaultValue={editingProject?.github_link || ""} key={`g-${editingProject?.id}`} placeholder="GitHub" className="p-3 bg-slate-50 rounded-xl border-none text-xs focus:ring-2 focus:ring-blue-500" />
+          {/* 第二行：封面图 URL (加入拦截样式) */}
+          <input 
+            name="cover_image" 
+            defaultValue={editingProject?.cover_image} 
+            placeholder="封面图 URL (必须以 https:// 开头)" 
+            onChange={() => setUrlError(null)}
+            className={`w-full p-4 bg-[#f8f9fa] rounded-xl text-sm transition-all outline-none ${urlError?.includes('封面') ? 'ring-2 ring-red-500 bg-red-50' : 'border-none focus:ring-2 focus:ring-[#2563eb]'}`} 
+          />
+
+          {/* 第三行：预览地址 & GitHub (加入拦截样式) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <input 
+              name="demo_link" 
+              defaultValue={editingProject?.demo_link} 
+              placeholder="预览地址 (必须以 https:// 开头)" 
+              onChange={() => setUrlError(null)} 
+              className={`w-full p-4 bg-[#f8f9fa] rounded-xl text-sm transition-all outline-none ${urlError?.includes('预览') ? 'ring-2 ring-red-500 bg-red-50' : 'border-none focus:ring-2 focus:ring-[#2563eb]'}`} 
+            />
+            <input 
+              name="github_link" 
+              defaultValue={editingProject?.github_link} 
+              placeholder="GitHub (必须以 https:// 开头)" 
+              onChange={() => setUrlError(null)}
+              className={`w-full p-4 bg-[#f8f9fa] rounded-xl text-sm transition-all outline-none ${urlError?.includes('GitHub') ? 'ring-2 ring-red-500 bg-red-50' : 'border-none focus:ring-2 focus:ring-[#2563eb]'}`} 
+            />
           </div>
           
-          <textarea name="description" defaultValue={editingProject?.description || ""} key={`ds-${editingProject?.id}`} placeholder="项目描述..." className="p-3 bg-slate-50 rounded-xl border-none text-xs h-24 focus:ring-2 focus:ring-blue-500" />
+          {/* TC-25 拦截错误提示 */}
+          {urlError && (
+            <p className="text-red-500 text-xs font-bold px-2 animate-in fade-in slide-in-from-top-1">{urlError}</p>
+          )}
+
+          <textarea 
+            name="description" 
+            defaultValue={editingProject?.description} 
+            placeholder="项目描述..." 
+            className="w-full p-4 bg-[#f8f9fa] rounded-xl border-none text-sm h-32 resize-none focus:ring-2 focus:ring-[#2563eb] outline-none transition-all" 
+          />
           
-          <div className="flex gap-2">
-            <button className={`flex-1 py-4 text-white rounded-2xl font-bold text-xs shadow-md transition-all active:scale-95 ${editingProject ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-700'}`}>
-              {editingProject ? "保存并覆盖修改" : "立即发布项目"}
+          <div className="flex gap-3 pt-2">
+            <button type="submit" className="flex-1 py-4 bg-[#1d4ed8] text-white rounded-xl font-bold text-sm hover:bg-[#1e40af] transition-colors">
+              {editingProject ? "确认保存修改" : "立即发布项目"}
             </button>
             {editingProject && (
-              <button type="button" onClick={() => setEditingProject(null)} className="px-6 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold text-xs">取消</button>
+               <button type="button" onClick={() => setEditingProject(null)} className="px-8 py-4 bg-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-300 transition-colors">取消编辑</button>
             )}
           </div>
         </form>
       </div>
 
-      {/* 项目列表清单 */}
-      <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-        {/* ✅ 3. 使用安全变量访问 length */}
-        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 ml-2">管理作品 ({projects.length})</h3>
-        <div className="space-y-3">
+      {/* 2. 管理作品列表 */}
+      <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
+        <h3 className="text-xs font-bold text-slate-400 mb-6 ml-2 tracking-wider">管理作品 ({projects.length})</h3>
+        <div className="space-y-4">
           {projects.length === 0 ? (
-            <div className="text-center py-10 text-slate-300 text-xs italic">暂无作品数据</div>
+            <div className="text-center py-10 text-slate-400 text-sm italic bg-[#f8f9fa] rounded-2xl">
+              还没有上传作品哦~
+            </div>
           ) : (
             projects.map(p => (
-              <div key={p.id} className={`flex items-center gap-4 p-4 rounded-2xl group border transition-all ${editingProject?.id === p.id ? 'bg-amber-50 border-amber-200 scale-[1.01]' : 'bg-slate-50 border-transparent hover:border-blue-100'}`}>
-                {/* ✅ 4. img src 增加 null 检查，防止报错 */}
-                <img src={p.cover_image || null} className="w-12 h-12 rounded-lg object-cover bg-slate-200 shadow-sm" alt="" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-black text-slate-800 truncate">{p.title}</p>
-                  <p className="text-[9px] text-slate-400 truncate mt-0.5">{p.tech_stack}</p>
+              <div key={p.id} className="flex items-center gap-5 p-4 bg-[#f8f9fa] rounded-2xl group transition-all hover:bg-white hover:shadow-md hover:border-blue-100 border border-transparent">
+                <img 
+                  src={p.cover_image || "/placeholder.png"} 
+                  alt={p.title} 
+                  className="w-14 h-14 rounded-xl object-cover bg-slate-200 border border-slate-100 flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <p className="text-[15px] font-bold text-slate-800 truncate mb-1">{p.title}</p>
+                  <p className="text-xs text-slate-400 truncate">{p.tech_stack}</p>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                  <button onClick={() => { setEditingProject(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="p-2.5 bg-white text-slate-400 hover:text-amber-500 rounded-xl shadow-sm border border-slate-100 transition-colors">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                  <button 
+                    onClick={() => {setEditingProject(p); window.scrollTo({top:0, behavior:'smooth'})}} 
+                    className="px-4 py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
+                  >
+                    编辑
                   </button>
-                  <form action={deleteProject.bind(null, p.id)}>
-                      <button className="p-2.5 bg-white text-slate-400 hover:text-red-500 rounded-xl shadow-sm border border-slate-100 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-                      </button>
-                  </form>
+                  <button 
+                    onClick={async () => {
+                      if(confirm("确定要删除这个作品吗？")) {
+                        await deleteProject(p.id);
+                      }
+                    }} 
+                    className="px-4 py-2 bg-red-50 text-red-500 text-xs font-bold rounded-lg hover:bg-red-500 hover:text-white transition-colors"
+                  >
+                    删除
+                  </button>
                 </div>
               </div>
             ))
